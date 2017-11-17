@@ -72,7 +72,7 @@ if __name__ == "__main__":
     final = norm_data*wb_mask*o_mask*nb_mask
     final[np.isnan(final)]=1
     if not norm:
-        final = final*normalize_array
+        final = final * np.atleast_2d(normalize_array).T
     # get output base name
     name_field = os.path.splitext(infile)
     if name_field[1] == '.gz':

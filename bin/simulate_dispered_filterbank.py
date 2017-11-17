@@ -8,7 +8,7 @@ This script assumes all the input and out put data files are in bbx formate.
 
 import lofasm.simulate.filter_bank_simulate as fbs
 import lofasm.simulate.dispersion_simulate as ds
-from lofasm.clean import cleandata as cd
+from lofasm.clean import normalizedata as nd
 import matplotlib.pyplot as plt
 import argparse
 import numpy as np
@@ -34,8 +34,13 @@ class GenHelpAction(argparse.Action):
             print("'%s' is not a data built-in generator." % values)
         parser.exit()
 
-def do_plot(fb_data, title='', save=False):
-    plt.imshow(fb_data.data, aspect='auto',origin='lower', cmap='hot' \
+def do_plot(fb_data, title='', save=False, log=False):
+    if log:
+        plt.imshow(np.log10(fb_data.data)*10.0, aspect='auto',origin='lower', cmap='hot' \
+           ,interpolation=None, extent=[fb_data.time_start, fb_data.time_end,
+                                        fb_data.freq_start, fb_data.freq_end])
+    else:
+        plt.imshow(fb_data.data, aspect='auto',origin='lower', cmap='hot' \
            ,interpolation=None, extent=[fb_data.time_start, fb_data.time_end,
                                         fb_data.freq_start, fb_data.freq_end])
     plt.colorbar()
@@ -130,7 +135,7 @@ if __name__ == "__main__":
                     time_start=sfd.time_start,
                     time_resolution=sfd.time_resolution,
                     data_gen=GENS['UniformDataGen'])
-        d, n = cd.normalize(sfd.data)
+        d, n = nd.robust_normalize(sfd.data)
         norm_sfd.data = d
     else:
         sfd = fbs.FilterBank('simulate', data_gen=GENS['UniformDataGen'], \
@@ -148,8 +153,8 @@ if __name__ == "__main__":
         n = np.ones(d.shape)
         norm_sfd.data = d
     if is_plot:
-        do_plot(sfd, title='Simulated Backgroud', save=save_plot)
-        do_plot(norm_sfd, title='Normalized Backgroud', save=save_plot)
+        do_plot(sfd, title='Simulated Backgroud', save=save_plot, log=True)
+        do_plot(norm_sfd, title='Normalized Backgroud', save=save_plot, log=True)
 
     signals = {}
     noises = {}
@@ -227,8 +232,8 @@ if __name__ == "__main__":
     if save_file:
         norm_sfd.write(norm_sfd.name+'.bbx', 'bbx')
     # Anti-normalize signal plus noise
-    sfd.data = norm_sfd.data * n
+    sfd.data = norm_sfd.data * np.atleast_2d(n).T
     if is_plot:
         title = 'Simulated Signal and noise unWhitened'
-        do_plot(sfd, title, save=save_plot)
+        do_plot(sfd, title, save=save_plot, log=True)
     sfd.write(args.output, 'bbx')
