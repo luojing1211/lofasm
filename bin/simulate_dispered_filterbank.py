@@ -8,7 +8,7 @@ This script assumes all the input and out put data files are in bbx formate.
 
 import lofasm.simulate.filter_bank_simulate as fbs
 import lofasm.simulate.dispersion_simulate as ds
-from lofasm.clean import normalizedata as nd
+from lofasm.clean import cleandata as cd
 import matplotlib.pyplot as plt
 import argparse
 import numpy as np
@@ -34,13 +34,8 @@ class GenHelpAction(argparse.Action):
             print("'%s' is not a data built-in generator." % values)
         parser.exit()
 
-def do_plot(fb_data, title='', save=False, log=False):
-    if log:
-        plt.imshow(np.log10(fb_data.data)*10.0, aspect='auto',origin='lower', cmap='hot' \
-           ,interpolation=None, extent=[fb_data.time_start, fb_data.time_end,
-                                        fb_data.freq_start, fb_data.freq_end])
-    else:
-        plt.imshow(fb_data.data, aspect='auto',origin='lower', cmap='hot' \
+def do_plot(fb_data, title='', save=False):
+    plt.imshow(fb_data.data, aspect='auto',origin='lower', cmap='hot' \
            ,interpolation=None, extent=[fb_data.time_start, fb_data.time_end,
                                         fb_data.freq_start, fb_data.freq_end])
     plt.colorbar()
@@ -135,12 +130,11 @@ if __name__ == "__main__":
                     time_start=sfd.time_start,
                     time_resolution=sfd.time_resolution,
                     data_gen=GENS['UniformDataGen'])
-        d, n = nd.robust_normalize(sfd.data)
+        d, n = cd.normalize(sfd.data)
         norm_sfd.data = d
     else:
         sfd = fbs.FilterBank('simulate', data_gen=GENS['UniformDataGen'], \
                              **configs['top'])
-        print configs['top']
         sfd.generate_data(amp=0.0)
         norm_sfd = fbs.FilterBank('Normalized_simulate', num_time_bin=int(sfd.num_time_bin), \
                     num_freq_bin=int(sfd.num_freq_bin),\
@@ -153,8 +147,8 @@ if __name__ == "__main__":
         n = np.ones(d.shape)
         norm_sfd.data = d
     if is_plot:
-        do_plot(sfd, title='Simulated Backgroud', save=save_plot, log=True)
-        do_plot(norm_sfd, title='Normalized Backgroud', save=save_plot, log=True)
+        do_plot(sfd, title='Simulated Backgroud', save=save_plot)
+        do_plot(norm_sfd, title='Normalized Backgroud', save=save_plot)
 
     signals = {}
     noises = {}
@@ -184,7 +178,8 @@ if __name__ == "__main__":
                              "target simulation start time '%lf'." %(k, v.time_start,
                              norm_sfd.time_start))
         norm_sfd += v
-    noise_level = norm_sfd.data.std()
+    noise_std = np.std(norm_sfd.data, axis=1)
+    noise_level = np.sqrt(np.sum(noise_std**2))
     signal = fbs.FilterBank('signals', num_time_bin=sfd.num_time_bin, \
                 num_freq_bin=sfd.num_freq_bin,\
                 freq_resolution=sfd.freq_resolution, \
@@ -194,10 +189,15 @@ if __name__ == "__main__":
                 data_gen=GENS['UniformDataGen'])
     signal.generate_data(amp=0.0)
     for sk, sv in list(signals.items()):
+        sv.generate_data(**configs[sk])
+        norm_sig_power = sv.data_gen.total_power_one_time()
         if 'snr' in list(configs[sk].keys()):
             snr = configs[sk]['snr']
-            configs[sk]['amp'] = snr * noise_level
-        sv.generate_data(**configs[sk])
+            amp = snr * noise_level / norm_sig_power
+            print ("Current singal amplitude is %s." % amp)
+            sv.data *= amp
+            sv.data_gen.gen_params.update({'amp':amp})
+
         if is_plot:
             title = 'Simulated ' + sk + ' Signal'
             do_plot(sv, title, save=save_plot)
@@ -232,8 +232,8 @@ if __name__ == "__main__":
     if save_file:
         norm_sfd.write(norm_sfd.name+'.bbx', 'bbx')
     # Anti-normalize signal plus noise
-    sfd.data = norm_sfd.data * np.atleast_2d(n).T
+    sfd.data = norm_sfd.data * n
     if is_plot:
         title = 'Simulated Signal and noise unWhitened'
-        do_plot(sfd, title, save=save_plot, log=True)
+        do_plot(sfd, title, save=save_plot)
     sfd.write(args.output, 'bbx')
