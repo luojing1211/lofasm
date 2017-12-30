@@ -24,6 +24,8 @@ class DataGenMeta(abc.ABCMeta):
 @six.add_metaclass(DataGenMeta)
 class FilterBankGen(object):
     """This is a class to generate filter bank data.
+       We assume the first index represents the frequency index,
+       the second one is the time index.
     """
     full_name = ''
     @classmethod
@@ -43,10 +45,21 @@ class FilterBankGen(object):
         self.time_bin = int(time_bin)
         self.resolution_freq = resolution_freq
         self.freq_bin = int(freq_bin)
-
+        self.gen_params = {}
+        self.data = None
 
     def gen_func(self, **kwarg):
         raise NotImplementedError
+
+    def total_power_one_time(self, time_bin=None, **kwarg):
+        if self.data is None:
+            raise RuntimeError("Please generate the signal first.")
+        else:
+            if time_bin is None:
+                all_time = np.sum(self.data, axis=0)
+                return all_time.max()
+            else:
+                return np.sum(self.data[:, time_bin])
 
 class UniformDataGen(FilterBankGen):
     """This is a class to generate filter bank data.
@@ -65,7 +78,10 @@ class UniformDataGen(FilterBankGen):
             The amplitude of uniformed data.
         """
         data = amp * np.ones((self.freq_bin, self.time_bin))
-        return data
+        self.gen_params.update({'amp':amp})
+        self.gen_params.update(kwarg)
+        self.data = data
+
 
 class FBWhiteNoiseGen(FilterBankGen):
     """This is a class to generate filter bank data.
@@ -87,6 +103,7 @@ class FBWhiteNoiseGen(FilterBankGen):
             DC offset from zero
         """
         data = amp * np.random.randn(self.freq_bin, self.time_bin) + offset
+        self.gen_params.update({'amp':amp, 'offset':offset})
         return data
 
 class GaussianPulseGen(FilterBankGen):
@@ -128,7 +145,12 @@ class GaussianPulseGen(FilterBankGen):
                             (ff - center_f)**2/(2 * std_freq**2)
                 #g_data[ii,jj] = 1.0/(2.0*np.pi*std_time*std_freq) * np.exp(exponent)
                 g_data[jj,ii] = np.exp(exponent)
-        return amp * g_data
+        self.gen_params.update({'amp':amp, 'center_freq_bin':center_freq_bin,
+                                'center_time_bin': center_time_bin,
+                                'std_time':std_time, 'std_freq':std_freq})
+        self.gen_params.update(kwarg)
+        self.data = amp * g_data
+
 
 def get_info_bbx(bbx_cls):
     """
@@ -181,9 +203,9 @@ class FilterBank(object):
             self.read_from_file(filename, filetype)
         else:
             self.time_resolution = time_resolution
-            self.num_time_bin = int(num_time_bin)
+            self.num_time_bin = num_time_bin
             self.freq_resolution = freq_resolution
-            self.num_freq_bin = int(num_freq_bin)
+            self.num_freq_bin = num_freq_bin
             self.freq_start = freq_start
             self.time_start = time_start
             self.time_end = time_start + time_resolution * num_time_bin
@@ -261,7 +283,7 @@ class FilterBank(object):
         # find the min and max time
         new_start = time_range.min()
         new_end = time_range.max()
-        new_time_bin = int((new_end - new_start)/self.time_resolution)
+        new_time_bin = (new_end - new_start)/self.time_resolution
         new_flt_data = FilterBank('total', time_resolution=self.time_resolution,
                                   num_time_bin=new_time_bin,\
                                   freq_resolution=self.freq_resolution,
@@ -321,7 +343,7 @@ class FilterBank(object):
         # find the min and max time
         new_start = time_range.min()
         new_end = time_range.max()
-        new_time_bin = int((new_end - new_start)/self.time_resolution)
+        new_time_bin = (new_end - new_start)/self.time_resolution
         if new_start == self.time_start and new_end == self.time_end:
             self.data += other.data
         else:
@@ -354,7 +376,8 @@ class FilterBank(object):
         return self
 
     def generate_data(self, **kws):
-        self.data = self.data_gen.gen_func(**kws)
+        self.data_gen.gen_func(**kws)
+        self.data = self.data_gen.data
 
     def gap_fill_default(self, gap):
         """
