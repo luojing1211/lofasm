@@ -24,7 +24,7 @@ def normalize(data,fast = False,window=200):
 
     normalized_data = np.ones_like(data)
     normalize_array = np.ones_like(data)
-    print 'Normalizing'
+    print('Normalizing')
 
     if not(fast):
 
@@ -63,7 +63,7 @@ def outlier_mask(data,threshold=10):
 
     '''
 
-    print "Removing outliers"
+    print("Removing outliers")
 
     outlier_mask_top = np.ones_like(data)
     outlier_mask_bottom = np.ones_like(data)
@@ -142,7 +142,7 @@ def wide_band_mask(data,threshold=1.7):
     threshold   standard deviations to flag bad times          											(try 1.0 < threshold < 2.0)
     '''
 
-    print "creating wide band mask"
+    print("creating wide band mask")
     wb_mask = np.ones_like(data)
     tbins = len(data[0,:])
     sub_bands = np.zeros((5 , tbins))
@@ -186,13 +186,13 @@ def clean(data):
     nb_mask  , percent_clean_freq_channels                      = c.narrow_band_mask(norm_data,threshold= args.nb_thresh)
     wb_mask  , percent_clean_time                               = c.wide_band_mask(norm_data,threshold= args.wb_thresh)
 
-    print fname + '---------------------------'
-    print 'top outlier average               : '+str(outlier_average_top)
-    print 'bottom outlier average            : '+str(outlier_average_bottom)
-    print 'percentage of clean freq channels : '+str(percent_clean_freq_channels)
-    print 'percentage of clean time          : '+str(percent_clean_time)
-    print ''
-    print '-------------------------------------------------------'
+    print(fname + '---------------------------')
+    print('top outlier average               : '+str(outlier_average_top))
+    print('bottom outlier average            : '+str(outlier_average_bottom))
+    print('percentage of clean freq channels : '+str(percent_clean_freq_channels))
+    print('percentage of clean time          : '+str(percent_clean_time))
+    print('')
+    print('-------------------------------------------------------')
 
     final = norm_data*wb_mask*o_mask*nb_mask
     final[np.isnan(final)]=1
@@ -216,7 +216,7 @@ def clean(data):
     lfc.write()
     lfc.close()
 
-    print 'done'
+    print('done')
 
     '''
     plt.imshow(final, aspect = 'auto', origin = 'lower', cmap='gray')

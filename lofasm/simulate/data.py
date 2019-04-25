@@ -1,4 +1,4 @@
-#methods to facilitate creating LoFASM data 
+#methods to facilitate creating LoFASM data
 #structures for simulating purposes
 
 import numpy as np
@@ -30,7 +30,7 @@ class DataPacket(NetworkPacket):
 	LoFASM Network Data Packet
 	'''
 
-	
+
 	def __init__(self, complex=False):
 
 		#run super's init
@@ -49,7 +49,7 @@ class RealPacket(DataPacket):
 	'''
 	LoFASM Real Data Packet
 
-	RealPacket instances are designed to hold real values 
+	RealPacket instances are designed to hold real values
 	only.
 	'''
 
@@ -57,13 +57,13 @@ class RealPacket(DataPacket):
 		'''
 		Usage: rp = RealPacket(data)
 
-		Inputs: data as a 2D numpy array or a tuple of two 
+		Inputs: data as a 2D numpy array or a tuple of two
 		1D numpy arrays.
 
 		In either case, the data elements must be real values.
 
 		If data is a 2D numpy array the shape of data must be (1024,2).
-		If data is a tuple containing two 1D numpy arrays then 
+		If data is a tuple containing two 1D numpy arrays then
 		their shape must be (1024,).
 
 		All values are converted to binary as 4-byte integers.
@@ -97,9 +97,9 @@ class RealPacket(DataPacket):
 				try:
 					bin_str += struct.pack(self._fmt_real, self.data[j][k])
 				except struct.error as err:
-					print err
-					print 'fmt: ', self._fmt_real
-					print 'val: ', self.data[j][k]
+					print(err)
+					print('fmt: ', self._fmt_real)
+					print('val: ', self.data[j][k])
 
 		return bin_str
 
@@ -107,7 +107,7 @@ class ComplexPacket(DataPacket):
 	'''
 	LoFASM Complex Data Packet
 
-	ComplexPacket instances are designed to hold complex values 
+	ComplexPacket instances are designed to hold complex values
 	only.
 
 	'''
@@ -115,8 +115,8 @@ class ComplexPacket(DataPacket):
 		'''
 		Usage: cp = ComplexPacket(data)
 
-		Where data is a 1D array containing 2048 complex values. 
-		Each element must have data type complex. 
+		Where data is a 1D array containing 2048 complex values.
+		Each element must have data type complex.
 		The (real an imaginary) values are converted to 4-byte signed integers.
 		'''
 
@@ -192,7 +192,7 @@ class HeaderPacket(NetworkPacket):
 
 	def getBinStr(self):
 		'''
-		Return entire header packet as a writeable 
+		Return entire header packet as a writeable
 		binary string.
 
 		All header values are packed in big endian format, '>L'.
@@ -216,7 +216,7 @@ class Burst(object):
 	The following 16 packets contain LoFASM filterbank
 	data.
 
-	The Burst format is as follows. 
+	The Burst format is as follows.
 
 	===========================================
 	| Packet No. |   Frame   |  FFT Channels  |
@@ -288,7 +288,7 @@ class Burst(object):
 
 		packet must be of the type that is expected for placement at index.
 
-		If header is true, then index is ignored. 
+		If header is true, then index is ignored.
 		Header packets are placed at index 0, always.
 
 		Only instances of HeaderPacket can be inserted as header packets.
@@ -319,10 +319,4 @@ class Burst(object):
 			self.packets[index] = packet
 
 		else:
-			print "Error: %i is not a valid index" % index
-
-
-
-
-
-
+			print("Error: %i is not a valid index" % index)

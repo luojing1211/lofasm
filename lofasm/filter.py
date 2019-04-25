@@ -17,12 +17,12 @@ def running_median(y, N=50):
     If N is not an integer it will be truncated.
     '''
     N = int(N)
-    
-    if N % 2 != 0: 
-        print 'running_median: N=%i is not even. Using N=%i instead.' % (N,N-1)
+
+    if N % 2 != 0:
+        print('running_median: N=%i is not even. Using N=%i instead.' % (N,N-1))
         N -= 1
-        
-    ymed = [] # Empty list for new values    
+
+    ymed = [] # Empty list for new values
     for i in range(len(y)):
         a=[] # Store values to determine new value of one point
         for j in range(i-N/2, i+1+N/2):

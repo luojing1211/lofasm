@@ -9,14 +9,14 @@ def getConfig(cfgpath=os.path.join(os.environ['HOME'],
                  '.lofasm/lofasm.cfg')):
     '''
     return lofasm config parameters as a dictionary
-    '''            
+    '''
     try:
         return dict(np.loadtxt(cfgpath, dtype=str))
     except IOError:
-        print "unable to open config file: ", cfgpath
+        print("unable to open config file: ", cfgpath)
 
 
-# this block is deprecated. it stays here for now for 
+# this block is deprecated. it stays here for now for
 # compatbility purposes.
 PORT = 60001
 PACKETSIZE = 8192

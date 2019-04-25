@@ -194,7 +194,7 @@ def parseDate ( s ):
     #   else -> raise SyntaxError ]
     m  =  DATE_PAT.match ( s )
     if  m is None:
-        raise SyntaxError, ( "Date does not have pattern YYYY-DD-MM: "
+        raise SyntaxError( "Date does not have pattern YYYY-DD-MM: "
                              "'%s'" % s )
     #-- 2 --
     year   =  int ( m.group ( YEAR_FIELD ) )
@@ -232,7 +232,7 @@ def parseTime ( s ):
     if  minuteTail.startswith(':'):
         m  =  FLOAT_PAT.match ( minuteTail[1:] )
         if  m is None:
-            raise SyntaxError, ( "Expecting minutes: '%s'" %
+            raise SyntaxError( "Expecting minutes: '%s'" %
                                  minuteTail )
         else:
             decMinute  =  float(m.group())
@@ -253,7 +253,7 @@ def parseTime ( s ):
     if  secondTail.startswith(':'):
         m  =  FLOAT_PAT.match ( secondTail[1:] )
         if  m is None:
-            raise SyntaxError, ( "Expecting seconds: '%s'" %
+            raise SyntaxError( "Expecting seconds: '%s'" %
                                  secondTail )
         else:
             decSecond  =  float(m.group())
@@ -312,7 +312,7 @@ def parseZone ( s ):
         tz  =  zoneCodeMap[s.upper()]
         return tz
     except KeyError:
-        raise SyntaxError, ( "Unknown time zone code: '%s'" % s )
+        raise SyntaxError ( "Unknown time zone code: '%s'" % s )
 # - - -   p a r s e F i x e d Z o n e
 
 HHMM_PAT  =  re.compile (
@@ -332,7 +332,7 @@ def parseFixedZone ( s ):
     if  s.startswith('+'):    sign  =  1
     elif  s.startswith('-'):  sign  =  -1
     else:
-        raise SyntaxError, ( "Expecting zone modifier as %shhmm: "
+        raise SyntaxError ( "Expecting zone modifier as %shhmm: "
                              "'%s'" % (s[0], s) )
     #-- 2 --
     # [ if s[1:] matches HHMM_PAT ->
@@ -342,7 +342,7 @@ def parseFixedZone ( s ):
     rawHHMM  =  s[1:]
     m  =  HHMM_PAT.match ( rawHHMM )
     if  m is None:
-        raise SyntaxError, ( "Expecting zone modifier as %sHHMM: "
+        raise SyntaxError ( "Expecting zone modifier as %sHHMM: "
                              "'%s'" % (s[0], s) )
     else:
         hours  =  int ( rawHHMM[:2] )
@@ -541,7 +541,7 @@ def parseAngle ( s ):
             second, checkTail  =  parseFloatSuffix ( secTail,
                 S_PAT, "Seconds followed by 's'" )
             if  len(checkTail) != 0:
-                raise SyntaxError, ( "Unidentifiable angle parts: "
+                raise SyntaxError ( "Unidentifiable angle parts: "
                                      "'%s'" % checkTail )
     #-- 4 --
     # [ return the angle (degree, minute, second) in radians ]
@@ -555,7 +555,7 @@ def parseFloatSuffix ( s, codeRe, message ):
       [ (s is a string) and
         (codeRe is a compiled regular expression) and
         (message is a string describing what is expected) ->
-          if  s starts with a float, followed by code (using 
+          if  s starts with a float, followed by code (using
           case-insensitive comparison) ->
             return (x, tail) where x is that float as type float
             and tail is the part of s after the float and code
@@ -617,7 +617,7 @@ def parseRe ( s, regex, message ):
     #   else -> raise SyntaxError, "Expecting (message)" ]
     m  =  regex.match ( s )
     if  m is None:
-        raise SyntaxError, "Expecting %s: '%s'" % (message, s)
+        raise SyntaxError("Expecting %s: '%s'" % (message, s))
     #-- 2 --
     # [ return (matched text from s, text from s after match) ]
     head  =  m.group()
@@ -645,7 +645,7 @@ def parseLat ( s ):
     #   else -> raise SyntaxError ]
     m  =  NS_PAT.match ( last )
     if  m is None:
-        raise SyntaxError, ( "Latitude '%s' does not end with 'n' "
+        raise SyntaxError( "Latitude '%s' does not end with 'n' "
                              "or 's'." % s )
     else:
         nsFlag  =  last.lower()
@@ -682,7 +682,7 @@ def parseLon ( s ):
     #   else -> raise SyntaxError ]
     m  =  EW_PAT.match ( last )
     if  m is None:
-        raise SyntaxError, ( "Longitude '%s' does not end with "
+        raise SyntaxError( "Longitude '%s' does not end with "
                              "'e' or 'w'." % s )
     else:
         ewFlag  =  last.lower()
@@ -746,7 +746,7 @@ def parseHours ( s ):
             second, checkTail  =  parseFloatSuffix ( secTail,
                 S_PAT, "Seconds followed by 's'" )
             if  len(checkTail) != 0:
-                raise SyntaxError, ( "Unidentifiable angle parts: "
+                raise SyntaxError( "Unidentifiable angle parts: "
                                      "'%s'" % checkTail )
     #-- 4 --
     # [ return the quantity (hour, minute, second) in hours ]
@@ -782,7 +782,7 @@ class MixedUnits:
         #         len(self.factors)+1 with zeroes if necessary ]
         coeffList  =  self.__pad ( coeffs )
         #-- 3 --
-        # [ total  +:=  (coeffList[-1] * 
+        # [ total  +:=  (coeffList[-1] *
         #        (product of all elements of self.factors)) +
         #       (coeffList[-2] *
         #        (product of all elements of self.factors[:-1])) +
@@ -824,7 +824,7 @@ class MixedUnits:
         #   else ->
         #     result  :=  result + (a list of shortage zeroes) ]
         if  shortage < 0:
-            raise ValueError, ( "Value %s has too many elements; "
+            raise ValueError( "Value %s has too many elements; "
                 "max is %d." % (coeffs, stdLen) )
         elif  shortage > 0:
             result  +=  [0.0] * shortage
@@ -913,7 +913,7 @@ class MixedUnits:
             s  =  "%0*.*f" % (n, decimals, corrected)
         else:
             s  =  "%.*f" % (decimals, corrected)
-              
+
         #-- 5 --
         result.append ( s )
 
@@ -1076,7 +1076,7 @@ class JulianDate:
                 assuming dt expresses UTC
               else ->
                 return a new JulianDate instance for the UTC
-                time equivalent to dt ]              
+                time equivalent to dt ]
         """
         #-- 1 --
         # [ if dt is naive ->
@@ -1190,7 +1190,7 @@ class SiderealTime:
         micros  =  int ( fracSec * 1e6 )
         dt  =  datetime.datetime ( date.year, date.month,
                    date.day, hour, minute, second, micros )
-        
+
         #-- 6 --
         return  dt
 # - - -   S i d e r e a l T i m e . f a c t o r B
@@ -1333,7 +1333,7 @@ class AltAz:
           [ (lst is a local sidereal time as a SiderealTime instance) and
             (latLon is the observer's position as a LatLon instance) ->
               return the corresponding equatorial coordinates as a
-              RADec instance ]            
+              RADec instance ]
         """
         #-- 1 --
         # [ dec  :=  declination of self at latLon in radians
@@ -1362,7 +1362,7 @@ class AltAz:
         #       and seconds
         #   azList  :=  self.az, formatted as degrees, minutes, and
         #       seconds ]
-        altList  =  dmsUnits.format ( dmsUnits.singleToMix ( 
+        altList  =  dmsUnits.format ( dmsUnits.singleToMix (
             degrees(self.alt) ), lz=True, decimals=3 )
         azList  =  dmsUnits.format ( dmsUnits.singleToMix (
             degrees(self.az) ), lz=True, decimals=3 )

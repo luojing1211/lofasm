@@ -141,8 +141,8 @@ def parse_file_header(file_obj, fileType='lofasm'):
             fhdr_field_dict = pdat_H.LoFASM_SPECTRUM_HEADER_TEMPLATE[file_hdr_version]
 
     except KeyError as err:
-        print "Error: LoFASM raw file header version not recognized."
-        print "Unrecognized version: ", err.message
+        print("Error: LoFASM raw file header version not recognized.")
+        print("Unrecognized version: ", err.message)
         sys.exit()
 
     #populate header dict
@@ -231,9 +231,9 @@ def print_hdr(hdr_dict):
     for key in hdr_dict:
         val = str(hdr_dict[key])
         if val != '0':
-            print str(key) + ": " + val
+            print(str(key) + ": " + val)
         else:
-            print "No header information"
+            print("No header information")
             break
 
 def is_header(hdr_raw, print_header=False):
@@ -314,7 +314,7 @@ def check_headers(file_obj, packet_size_bytes=PACKET_SIZE_B, verbose=False, prin
     #restore file pointer
     file_obj.seek(freeze_pointer)
     if print_headers:
-        print print_msg
+        print(print_msg)
 
     return (best_loc, err_counter)
 
@@ -362,20 +362,20 @@ def get_next_raw_burst(file_obj, packet_size_bytes=None, packets_per_burst=None,
         burst_size = INTEGRATION_SIZE_B
     else:
         burst_size = packet_size_bytes * packets_per_burst
-        print "Warning: unusual integration size ", burst_size
+        print("Warning: unusual integration size ", burst_size)
 
 
     while 1:
         raw_dat = file_obj.read(burst_size)
         if (not raw_dat) or (len(raw_dat) < burst_size):
             if loop_file:
-                print "Reached end of file. Starting over..."
+                print("Reached end of file. Starting over...")
                 file_obj.seek(file_start_position)
                 raw_dat = file_obj.read(burst_size)
                 yield LoFASM_burst(raw_dat)
             else:
-                print "No more data to read in %s" % file_obj.name
-                print "Exiting..."
+                print("No more data to read in %s" % file_obj.name)
+                print("Exiting...")
                 exit()
         else:
             #yield raw_dat
@@ -406,7 +406,7 @@ def find_first_hdr_packet(file_obj, packet_size_bytes=PACKET_SIZE_B, hdr_size=8)
                 return file_obj.tell()
 
         file_obj.seek(file_obj.tell() + packet_size_bytes - hdr_size)
-    print "Finished searching: did not find valid header in %s" % file_obj.name
+    print("Finished searching: did not find valid header in %s" % file_obj.name)
 
 def is_next_packet_header(file_obj, packet_size_bytes=PACKET_SIZE_B, hdr_size_bytes=8):
     '''
@@ -488,7 +488,7 @@ class LoFASM_burst:
             raw.write(iburst)
         # skip past the header packet
         raw.seek(8192)
-        
+
         for isOdd in [False, True]:
             # if isOdd is False load even bins
             # if True then load odd bins
@@ -497,10 +497,10 @@ class LoFASM_burst:
                     self.autos[k].seek(4)
                 for k in CROSSPOLS:
                     self.cross[k].seek(8)
-            
+
             # only read half of the packets since we are ignoring the
             # second half of the channels below.
-            
+
             # load AA & BB bins
             for i in range512:
                 self.autos['AA'].write(raw.read(4))
@@ -523,7 +523,7 @@ class LoFASM_burst:
                     self.cross[k].seek(8, 1)
                 raw.seek(4096, 1)
 
-                
+
 
     def _unpack_burst(self, burst_string):
         '''unpack contents of burst_string into class attributes
@@ -628,9 +628,9 @@ class LoFASM_burst:
         '''
 
         if len(even_list) != len(odd_list):
-            print 'interleave even: ', len(even_list)
-            print 'interleave odd: ', len(odd_list)
-            print "Cannot interleave! Even and odd lists must be of equal length!"
+            print('interleave even: ', len(even_list))
+            print('interleave odd: ', len(odd_list))
+            print("Cannot interleave! Even and odd lists must be of equal length!")
         else:
             interleave_list = []
             for i in range(len(even_list)):
@@ -783,7 +783,7 @@ class LoFASMFileCrawler(object):
                 else: # key not found
                     offset += blockSize
         except EOFError:
-            print "reached end of file."
+            print("reached end of file.")
             blockPtr = -1
         self._lofasm_file.seek(freeze_ptr)
         return blockPtr
@@ -809,19 +809,19 @@ class LoFASMFileCrawler(object):
                 #check file extension
                 if not filename.endswith('.lofasm') and \
                    not filename.endswith('.lofasm.gz'):
-                    print "Warning: {} file extension not recognized.".format(
-                        filename)
-                    print "Attempting to open anyway."
+                    print("Warning: {} file extension not recognized.".format(
+                        filename))
+                    print("Attempting to open anyway.")
                 #get file handler
                 if self.gz:
-                    print "Warning: gzipped files are only supported for header versions 4 or higher."
+                    print("Warning: gzipped files are only supported for header versions 4 or higher.")
                     self._lofasm_file = gzip.open(filename, 'rb')
                 else:
                     self._lofasm_file = open(filename, 'rb')
 
         except IOError as err:
-            print "Error opening ", filename
-            print err.message
+            print("Error opening ", filename)
+            print(err.message)
             raise IOError('{} does not exist'.format(filename))
 
         #get header information
@@ -944,7 +944,7 @@ class LoFASMFileCrawler(object):
 
 
         if self._print_int_headers:
-            print self._int_hdr
+            print(self._int_hdr)
 
         #validate integration
         if self._int_hdr['signature'] != HDR_V1_SIGNATURE:
@@ -1005,7 +1005,7 @@ class LoFASMFileCrawler(object):
         if self._ptr_loc >= N*INTEGRATION_SIZE_B:
             self._update(-N)
         else:
-            print "Beginning of file"
+            print("Beginning of file")
 
     def reset(self):
         '''
@@ -1065,12 +1065,12 @@ class LoFASMFileCrawler(object):
         '''
 
         if state == None:
-            print "Print Integration Headers: ", bool(self._print_int_headers)
+            print("Print Integration Headers: ", bool(self._print_int_headers))
             return
 
         s = bool(state)
         if self._print_int_headers != s:
-            print "Setting value to ", str(s)
+            print("Setting value to ", str(s))
             self._print_int_headers = s
 
     def setPol(self, pol):

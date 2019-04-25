@@ -3,7 +3,7 @@
 __all__ = ['lofasm_dat_lib', 'parse_data', 'parse_data_H',
            'animate_lofasm', 'simulate', 'write', 'config',
            'fs']
-from config import getConfig
+from .config import getConfig
 import platform
 import matplotlib
 

@@ -41,7 +41,7 @@ class FileListHandler(object):
         if not self.file_start_mjds:
             errmsg = "Internal list of start MJD times has not been created."
             raise NotImplemented(errmsg)
-        
+
         dt_list = [Time(x, format='mjd').datetime for x in self.file_start_mjds]
         return dt_list
 
@@ -61,7 +61,7 @@ class FileListHandler(object):
 
     def _getStartTimeFromFileHeader(self, f=None):
         raise NotImplemented("This method should be overridden by a child class")
-    
+
     def _getFileStartTimesFromHeader(self):
         '''
         Set self.file_start_mjds by parsing file headers.
@@ -90,27 +90,27 @@ class FileListHandler(object):
                     if self._inMjdRange(mjd_timestamp):
                         file_start_mjds.append(mjd_timestamp)
                     else:
-                        print "  --Removing {}".format(f)
+                        print("  --Removing {}".format(f))
                         self.flist.remove(f)
                 else:
                     file_start_mjds.append(mjd_timestamp)
             except:
-                print "\nunable to process {}\n".format(f)
+                print("\nunable to process {}\n".format(f))
                 self.flist.remove(f)  # remove from file list
-                
+
             i += 1
-                
+
         self.file_start_mjds = file_start_mjds
         self.nfiles = len(self.flist)
 
     def _inMjdRange(self, mjd):
         '''Check if mjd is within selected range.
-        
+
         Parameters
         ----------
         mjd : float
             MJD float to check.
-        
+
         Returns
         -------
         result : bool
@@ -126,9 +126,9 @@ class FileListHandler(object):
 class LofasmFileListHandler(FileListHandler):
     def __init__(self, dirPath, mjdRange=()):
         '''Initialize a DataSet Handler for .lofasm data.
-        
+
         Parameters
-        ---------- 
+        ----------
         dirPath : str
             Path to the directory containing dataset files.
         mjdRange : tuple, optional
@@ -136,7 +136,7 @@ class LofasmFileListHandler(FileListHandler):
             are represented by floats. If no range is specified then
             process all files in dataset directory.
         '''
-        
+
         # verify inputs
         #assert os.path.isdir(dirPath), "Unable to open the dataset directory."
         super(LofasmFileListHandler, self).__init__(dirPath)
@@ -157,7 +157,7 @@ class LofasmFileListHandler(FileListHandler):
 class BbxFileListHandler(FileListHandler):
     def __init__(self, dirPath, pol, mjdRange=()):
         '''Initialize a DataSet Handler for .bbx data.
-        
+
         Parameters
         ----------
         dirPath : str
@@ -169,12 +169,12 @@ class BbxFileListHandler(FileListHandler):
             are represented by floats. If no range is specified then
             process all files in dataset directory.
         '''
-        
+
         # verify inputs
         assert os.path.isdir(dirPath), "Unable to open the dataset directory: {}".format(dirPath)
         pol = pol.upper()
         assert pol in Baselines, "Unrecognized Baseline"
-        
+
         super(BbxFileListHandler, self).__init__(dirPath)
 
         # filter out only the baseline of interest
@@ -183,11 +183,11 @@ class BbxFileListHandler(FileListHandler):
 
         # to support multiple 'start_time' formats (due to a bug that caused them)
         self.startt_fmts = ["%Y-%m-%dT%H:%M:%S", "%Y%m%d_%H%M%S"]
-        
+
         self.mjdRange = mjdRange
         # get start times of all files in dataset director
         self._getFileStartTimesFromHeader()
-        
+
 
     def _getMjdStartTimeFromFileHeader(self, f):
         lfx = bbx.LofasmFile(f)
@@ -200,4 +200,3 @@ class BbxFileListHandler(FileListHandler):
         dfmt = self.startt_fmts[0] if 'T' in startt else self.startt_fmts[1]
         timeobj = datetime.strptime(startt_repr, dfmt)
         return Time(timeobj).mjd
-        

@@ -12,7 +12,7 @@ import pytz
 #class definitions
 class SkySource(object):
     """SkySource class to store source coordinates and generate expected time delays.
-    Time delay information corresponds to data taken in the LoFASM Outrigger mode. 
+    Time delay information corresponds to data taken in the LoFASM Outrigger mode.
     Currently only useful for LoFASM 4 data.
     """
 
@@ -24,13 +24,13 @@ class SkySource(object):
         ------------
 
         ra : float
-            right ascension. can be either in units of radians or degrees. 
+            right ascension. can be either in units of radians or degrees.
 
         dec : float
             declination. can be either in units of radians or degrees.
 
         unit : str, optional
-            the unit of ra and dec (either 'rad' or 'deg'). 
+            the unit of ra and dec (either 'rad' or 'deg').
             ra and dec must have the same unit.
 
         lofasm_station : lofasm.station.lofasmStation
@@ -39,7 +39,7 @@ class SkySource(object):
         '''
 
         if not isinstance(lofasm_station, lofasmStation):
-            raise TypeError, 'lofasmStation must be an instance of lofasm.station.lofasmStation'
+            raise TypeError('lofasmStation must be an instance of lofasm.station.lofasmStation')
 
         self.coord = SkyCoord(ra, dec, unit=unit)
         self.station = lofasm_station
@@ -95,7 +95,7 @@ class SkySource(object):
         Returns
         ----------
 
-        numpy.ndarray containing the delay for each LST value in times. 
+        numpy.ndarray containing the delay for each LST value in times.
         delay values are in units of nanoseconds
         '''
 
@@ -122,13 +122,13 @@ class SkySource(object):
             if t.tzinfo is not pytz.utc:
                 t = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, t.second, t.microsecond, tzinfo=pytz.utc)
         except AttributeError:
-            raise TypeError, 'lofasm_station must be a datetime.datetime object'
+            raise TypeError('lofasm_station must be a datetime.datetime object')
 
         lofasm_station.observer.date = (t-self.epoch).total_seconds()/86400.0
 
         self.ephem.compute(lofasm_station.observer)
 
-        return (self.ephem.alt, self.ephem.az)        
+        return (self.ephem.alt, self.ephem.az)
 
     def isVisible(self, t, lofasm_station=nullStation()):
         '''
@@ -142,7 +142,7 @@ class SkySource(object):
         '''
 
         if lofasm_station.isNull:
-            raise ValueError, 'lofasm_station must not be NULL.'
+            raise ValueError('lofasm_station must not be NULL.')
             return False
 
         alt, az = self.AltAz(t, lofasm_station)
@@ -160,21 +160,21 @@ class SkySource(object):
 
     def getLightcurve(self, data, times, binwidth_ns=10.0, offset=0):
         '''
-        return lightcurve for this source by extracting the power along 
+        return lightcurve for this source by extracting the power along
         the corresponding sky-track from data.
 
 
         parameters
-        data : numpy.ndarray 
+        data : numpy.ndarray
             2d delay vs. time array
-        times : list, np.ndarray, 
-            1d timestamp array. if elements are datetime objects then they are converted to 
+        times : list, np.ndarray,
+            1d timestamp array. if elements are datetime objects then they are converted to
             LST radians. otherwise, it is assumed that LST in radians is being provided.
         binwidth_ns : float
             width of each delay bin in nanoseconds
         offset : int
             delay offset bin
-            
+
         '''
         N = len(times)
         bins = self.getDelayBins(times, binwidth_ns, offset)
@@ -187,7 +187,7 @@ class SkySource(object):
         return lightcurve
 
     def riseNset(self, station=None):
-        
+
         #Given the DEC, what is the hour angle of the half power point.
 
         if station:
@@ -196,7 +196,7 @@ class SkySource(object):
             station = self.station
 
         if self.coord.dec.rad < station.minDec.rad or self.coord.dec.rad > station.maxDec.rad:
-            raise ValueError, "Source must be within the FOV of {}.".format(statin.name)
+            raise ValueError("Source must be within the FOV of {}.".format(statin.name))
 
         stationLat = station.lat.rad
         srcDec = self.coord.dec.rad

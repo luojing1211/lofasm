@@ -62,7 +62,7 @@ class LofasmFile(object):
                 if e.message == 'Not a gzipped file':
                     gz = False
                 else:
-                    raise IOError, e.message
+                    raise IOError(e.message)
         elif mode == 'write':
             gz = gz if gz else False
 
@@ -119,7 +119,7 @@ class LofasmFile(object):
             dim2_bins = len(data)
             dim1_bins = 1
         else:
-            raise NotImplementedError, "Currently only up to 2d data is supported."
+            raise NotImplementedError("Currently only up to 2d data is supported.")
 
         if self._new_file:
             self._set('dim1_len', str(dim1_bins))
@@ -135,10 +135,10 @@ class LofasmFile(object):
             new_iscplx = np.iscomplexobj(data)
 
             if old_iscplx != new_iscplx:
-                raise ValueError, "new data must match existing data realness"
+                raise ValueError("new data must match existing data realness")
 
             if str(dim2_bins) != self.dim2_len:
-                raise ValueError, "new data length for dim2 must match the existing data!"
+                raise ValueError("new data length for dim2 must match the existing data!")
 
 
             new_bins = dim1_bins * dim2_bins
@@ -155,12 +155,12 @@ class LofasmFile(object):
         self._fp.close()
 
     def read_data(self, N=None):
-        """Parse data block in LoFASM filterbank file and load into 
+        """Parse data block in LoFASM filterbank file and load into
         memory as `self.data`.
-        The resulting data array in self.data is stored as a 2d 
+        The resulting data array in self.data is stored as a 2d
         array with dim1 as the horizontal axis and
         dim2 as the vertical axis.
-        If reading a typical LoFASM-filterbank file then the 
+        If reading a typical LoFASM-filterbank file then the
         x-axis will represent the time bins and the y-axis will
         represent the frequency bins.
 
@@ -169,7 +169,7 @@ class LofasmFile(object):
         N : int
             The number of rows to read. If not provided, then
             attempt to read the entire file (read all rows).
-            If `num_time_bin` is larger than the number of time 
+            If `num_time_bin` is larger than the number of time
             bins in the file then read the entire file.
             A value of 0 will result in nothing being read.
         Raises
@@ -224,9 +224,9 @@ class LofasmFile(object):
         """Set header or metadata fields
         Set or create header comment fields. If the field `key` exists
         then its value will be overwritten.
-        If the field does not exist, then it will be created as a 
+        If the field does not exist, then it will be created as a
         new comment field.
-        If `key` exists as part of the metadata field, then the 
+        If `key` exists as part of the metadata field, then the
         value will be overwritten.
 
         Parameters
@@ -259,7 +259,7 @@ class LofasmFile(object):
                 missing_keys.append(key)
         if missing_keys:
             errmsg = "header missing required fields: {}".format(', '.join(missing_keys))
-            raise RuntimeError, errmsg
+            raise RuntimeError(errmsg)
 
         if self._fp.tell() == 0:
             self._write_header()
@@ -285,7 +285,7 @@ class LofasmFile(object):
     ###################
     def _debug(self, msg):
         if self.debug:
-            print msg
+            print(msg)
             sys.stdout.flush()
 
     def _load_header(self):
@@ -294,14 +294,14 @@ class LofasmFile(object):
             if fsig.startswith('%'):
                 fsig = fsig.strip('%')
             elif self.gz:
-                raise IOError, "Unable to parse file. Unrecognizable file signature. Are you sure compression should be turned on?"
+                raise IOError("Unable to parse file. Unrecognizable file signature. Are you sure compression should be turned on?")
             else:
-                raise IOError, "Unable to parse file. Unrecognizable file signature."
+                raise IOError("Unable to parse file. Unrecognizable file signature.")
         except IOError as e:
             if self.gz and e.strerror == 'Not a gzipped file':
-                raise IOError, "Compression parameter is True but input file is not a gzipped file"
+                raise IOError("Compression parameter is True but input file is not a gzipped file")
             else:
-                raise IOError, e.message
+                raise IOError(e.message)
 
         if fsig not in SUPPORTED_FILE_SIGNATURES:
             raise NotImplementedError("{} is not a supported LoFASM file signature".format(fsig))

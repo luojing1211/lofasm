@@ -27,27 +27,27 @@ class ComparableMixin(object):
         return self._compare(other, lambda s,o: s <= o)
     def __ne__(self, other):
         return self._compare(other, lambda s,o: s != o)
-    
+
 class LoFASM_file(ComparableMixin):
     def __init__(self, pathtofile):
         if os.path.isdir(pathtofile):
-            print "please provide a full path."
+            print("please provide a full path.")
             pass
         elif not os.path.isfile(pathtofile):
-            print pathtofile + " is not a normal file"
+            print(pathtofile + " is not a normal file")
             pass
         else:
             if len(pathtofile.split('/')) > 1:
             #set parent directory
                 splitpath = pathtofile.split('/')
                 filename = splitpath[-1]
-                
+
                 if pathtofile[0] == '':
                     path_to_parent = '/'
                 else:
                     path_to_parent = ''
 
-                    
+
                 for i in range(len(splitpath) - 1):
                     if i == 0:
                         path_to_parent += splitpath[i]
@@ -58,9 +58,9 @@ class LoFASM_file(ComparableMixin):
             else:
                 filename = pathtofile
                 self.parent = os.getcwd()
-              
+
             self.name = filename
-            
+
             self.date = file_datetime(self.name)
             self._file_obj = None
             self._startPos = None
@@ -69,22 +69,22 @@ class LoFASM_file(ComparableMixin):
     def _cmpkey(self):
         #key for rich comparisons
         return self.date
-    
+
     def _openFile(self):
         self._file_obj = open(self.parent + '/' + self.name, 'rb')
-    
+
     def getFileHdr(self):
         if self._file_obj:
             return pdat.parse_file_header(self._file_obj)
         else:
             self._openFile()
             return self.getFileHdr()
-    
+
     def getFileObj(self):
         if not self._file_obj:
             self._openFile()
         return self._file_obj
-            
+
     def get_local_list(self):
         self.local_list = []
         for item in os.listdir(self.parent):
@@ -109,14 +109,14 @@ class LoFASM_file(ComparableMixin):
             self._file_obj.seek(offset)
         self._burstGenerator = pdat.get_next_raw_burst(self._file_obj)
         return self._getBurstGenerator()
-    
+
     def getNextIntegration(self):
         bgen = self._getBurstGenerator()
         return bgen.next()
 
 def get_total_file_size(fname):
     if not os.path.isfile(fname):
-        print "bad file name"
+        print("bad file name")
         return None
     else:
         size_cmd = "ls -l %s | awk '{print $5}'" % fname
@@ -126,10 +126,10 @@ def syscmd(cmd):
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
     (output, err) = proc.communicate()
     if err:
-        print "Error executing system command:",
-        print cmd
+        print("Error executing system command:")
+        print(cmd)
     return output
-         
+
 def file_datetime(filename):
     """return datetime.datetime object from filename"""
 
@@ -137,7 +137,7 @@ def file_datetime(filename):
     if filename == '' or len(filename) < 22:
         pass
     elif filename[-7:] != '.lofasm':
-        print "What is this?"
+        print("What is this?")
         pass
     else:
         filename = filename.rstrip('.lofasm')
@@ -149,9 +149,9 @@ def file_datetime(filename):
         hour = int(time[:2])
         minute = int(time[2:4])
         second = int(time[4:6])
-        
+
         if (len(date+time) < 14):
-            print "can't parse file's date :("
+            print("can't parse file's date :(")
             pass
         else:
             return datetime.datetime(year, month, day, hour, minute, second)
@@ -164,10 +164,10 @@ def get_spectra_range(start_date, end_date, data_home=''):
 
     #now = datetime.datetime.now()
     #now = datetime.datetime(2014,8,2)
-    print "Start: ", start_date
+    print("Start: ", start_date)
     buffer_start = start_date
-    print "Buffer start: ", buffer_start
-    print "Buffer length: ", end_date - start_date
+    print("Buffer start: ", buffer_start)
+    print("Buffer length: ", end_date - start_date)
 
     file_ext = '.lofasm'
     dir_list = []
@@ -190,8 +190,8 @@ def get_spectra_range(start_date, end_date, data_home=''):
     for dir in dir_list:
         #print "opening %s" % dir
         year = int(dir[:4])
-        month = int(dir[4:6]) 
-        day = int(dir[6:8]) 
+        month = int(dir[4:6])
+        day = int(dir[6:8])
 
         dir_date = datetime.datetime(year, month, day)
         #print "dir_date: ", dir_date
@@ -204,12 +204,12 @@ def get_spectra_range(start_date, end_date, data_home=''):
         else:
             #print "sifting through lofasm files"
             local_files = []
-    
+
             for item in os.listdir(data_home + '/' + dir):
                 if item[-7:] == file_ext:
 
                     item_date = file_datetime(item)
-                
+
                     local_files.append(item_date)
             local_files.sort()
             local_files.reverse() #latest files first
@@ -223,10 +223,10 @@ def get_spectra_range(start_date, end_date, data_home=''):
                 fsec = str(fdate.second) if fdate.second > 9 else '0'+str(fdate.second)
                 pathToFile = data_home + '/' + dir + '/' + fyear + fmonth + fday + '_' + \
                     fhour + fmin + fsec + file_ext
-            
-            
+
+
                 lofasm_file = LoFASM_file(pathToFile)
-    
+
                 if lofasm_file.date >= buffer_start:
                     if lofasm_file.getFileSize() > 100: #weed out bad files
                         #print "Adding %s" % lofasm_file.name

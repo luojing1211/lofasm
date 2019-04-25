@@ -41,7 +41,7 @@ class station(object):
         self.FOV_collection = 0
         self.config = config
         self.horizon_cutoff_costheta = np.cos(np.pi/2 - horizon_cutoff_alt*np.pi/180.)
-        
+
         if not type(time) == datetime.datetime:
             self.time = datetime.datetime.utcnow()
         else:
@@ -53,7 +53,7 @@ class station(object):
                                  verbose=False)
         self.Rotator = hp.Rotator(coord=['C','G'])
 
-        print "CONFIG: ", config
+        print("CONFIG: ", config)
         if (config == 'inner' or config == 'outer'):
             radius = 441. if config == 'inner' else np.sqrt(3.)*441.
             self.lofasm = v3.LoFASM_onering(radius, rot_angle=rot_angle,
@@ -86,7 +86,7 @@ class station(object):
         Tsky = hp.get_interp_val(self.hpmap,coords[0],coords[1])*(self.frequency/408.0)**(-2.55)
 
         ans = self.lofasm.beam_pattern(theta,phi,[0,0,1])
-        ans += self.lofasm.beam_pattern(theta,phi,[0,1,0]) 
+        ans += self.lofasm.beam_pattern(theta,phi,[0,1,0])
         ans *= (Tsky*(1.3804e-23)/wavelength**2)/(1e-26)/2.0
 
         return ans
@@ -123,8 +123,8 @@ class station(object):
             if (utc == -1):
                 self.__lst_current = self.lst() #Remove
             else:
-			    t = sidereal.SiderealTime.fromDatetime(utc)
-			    self.__lst_current = t.lst(self.east_long_radians)
+                t = sidereal.SiderealTime.fromDatetime(utc)
+                self.__lst_current = t.lst(self.east_long_radians)
         else: # lst==True
             self.__lst_current = sidereal.SiderealTime(t)
 
@@ -152,42 +152,42 @@ class station(object):
         return power
 
 def galaxy():
-		"""Return a model of the power from the galaxy.
+        """Return a model of the power from the galaxy.
 
-		The model is generated using Dr. Rick Jenet's galaxy model generation
-		code.
-		The timebins will match the res parameter of the calibrate class.
-		"""
-		rot_ang = 1
-		pol_ang = 1
+        The model is generated using Dr. Rick Jenet's galaxy model generation
+        code.
+        The timebins will match the res parameter of the calibrate class.
+        """
+        rot_ang = 1
+        pol_ang = 1
 
 
-		time_array = [datetime.datetime(2017, 5, 25, 2, 0),
-					  datetime.datetime(2017, 5, 26, 7, 0),
-					  #~ datetime.datetime(2017, 5, 28, 1, 0),
-					  #~ datetime.datetime(2017, 5, 30, 8, 0),
-					  datetime.datetime(2017, 6, 4, 2, 0)]
+        time_array = [datetime.datetime(2017, 5, 25, 2, 0),
+                      datetime.datetime(2017, 5, 26, 7, 0),
+                      #~ datetime.datetime(2017, 5, 28, 1, 0),
+                      #~ datetime.datetime(2017, 5, 30, 8, 0),
+                      datetime.datetime(2017, 6, 4, 2, 0)]
 
-		lfdic = {1:{'name':'LI', 'lat':[26,33,19.676], 'long':[97,26,31.174], 't_offset':6.496132851851852},
-				 2:{'name':'LII', 'lat':[34,4,43.497], 'long':[107,37,5.819], 't_offset':7.174552203703703},
-				 3:{'name':'LIII', 'lat':[38,25,59.0], 'long':[79,50,23.0], 't_offset':5.322648148148148},
-				 4:{'name':'LIV', 'lat':[34,12,3.0], 'long':[118,10,18.0], 't_offset':7.87811111111111}}
-		lfs = lfdic[4]
-		long_radians = (lfs['long'][0] + lfs['long'][1]/60.0 + lfs['long'][2]/3600.0)*np.pi/180.0
+        lfdic = {1:{'name':'LI', 'lat':[26,33,19.676], 'long':[97,26,31.174], 't_offset':6.496132851851852},
+                 2:{'name':'LII', 'lat':[34,4,43.497], 'long':[107,37,5.819], 't_offset':7.174552203703703},
+                 3:{'name':'LIII', 'lat':[38,25,59.0], 'long':[79,50,23.0], 't_offset':5.322648148148148},
+                 4:{'name':'LIV', 'lat':[34,12,3.0], 'long':[118,10,18.0], 't_offset':7.87811111111111}}
+        lfs = lfdic[4]
+        long_radians = (lfs['long'][0] + lfs['long'][1]/60.0 + lfs['long'][2]/3600.0)*np.pi/180.0
 
-		LoFASM = station(lfs['name'],lfs['lat'],lfs['long'],FOV_color='b',
-						 time='',frequency=20.0,one_ring='inner',
-						 rot_angle=rot_ang,pol_angle=pol_ang)
-		innerNS_FOV = 0.61975795698554226 #LoFASM.lofasm.Omega()
-		inner_conversion_NS = np.divide((np.power(np.divide(3.0*1.0e8,45.0e6),2)),(innerNS_FOV))
+        LoFASM = station(lfs['name'],lfs['lat'],lfs['long'],FOV_color='b',
+                         time='',frequency=20.0,one_ring='inner',
+                         rot_angle=rot_ang,pol_angle=pol_ang)
+        innerNS_FOV = 0.61975795698554226 #LoFASM.lofasm.Omega()
+        inner_conversion_NS = np.divide((np.power(np.divide(3.0*1.0e8,45.0e6),2)),(innerNS_FOV))
 
-		print 'Stage 1/2 Done.'
+        print('Stage 1/2 Done.')
 
-		powe = np.multiply(LoFASM.calculate_gpowervslstarray(time_array),inner_conversion_NS)
-		power = 10*np.log10(np.array(powe))
-		print 'Stage 2/2 Done.'
+        powe = np.multiply(LoFASM.calculate_gpowervslstarray(time_array),inner_conversion_NS)
+        power = 10*np.log10(np.array(powe))
+        print('Stage 2/2 Done.')
 
-		return power
+        return power
 
 #power = galaxy()
 #plt.plot(power)
@@ -205,20 +205,20 @@ def galaxy():
 #~ LoFASMIV       = station('GST',[34,12,03.0],[118,10,18.0],FOV_color='bl')
 #~ LoFASMIV_inner = station('GST',[34,12,03.0],[118,10,18.0],FOV_color='bl',one_ring='inner')
 #~ LoFASMIV_outer = station('GST',[34,12,03.0],[118,10,18.0],FOV_color='bl',one_ring='outer')
-#~ 
-#~ 
+#~
+#~
 #~ lfstations = {}
-#~ 
+#~
 #~ lfstations['LoFASMI'] = {}
 #~ lfstations['LoFASMI']['full'] = LoFASMI
 #~ lfstations['LoFASMI']['inner'] = LoFASMI_inner
 #~ lfstations['LoFASMI']['outer'] = LoFASMI_outer
-#~ 
+#~
 #~ lfstations['LoFASMII'] = {}
 #~ lfstations['LoFASMII']['full'] = LoFASMII
 #~ lfstations['LoFASMII']['inner'] = LoFASMII_inner
 #~ lfstations['LoFASMII']['outer'] = LoFASMII_outer
-#~ 
+#~
 #~ lfstations['LoFASMIII'] = {}
 #~ lfstations['LoFASMIII']['full'] = LoFASMIII
 #~ lfstations['LoFASMIII']['inner'] = LoFASMIII_inner

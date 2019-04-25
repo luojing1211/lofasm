@@ -45,7 +45,7 @@ class data_handler(object):
             # What follows is a hotfix so that this library can support
             # both time formats. In the future, the bug should be fixed
             # and this library should only have to support 1 time format.
-            # 
+            #
             # The following loop tries each format specified in fmts.
             # If the time is parsed correctly (and does not throw an
             # exception) then the loop will be broken.
@@ -60,7 +60,7 @@ class data_handler(object):
                 except ValueError:
                     pass
             else:
-                print "Cannot parse start time header field {}".format(startt_repr)
+                print("Cannot parse start time header field {}".format(startt_repr))
 
 
             # Find the frequency bin corresponding to the given frequency
@@ -222,12 +222,12 @@ class galaxymodel(object):
     pass
 
 class calibrate(object):
-    """	Class that contains and calibrates lofasm data.	
+    """	Class that contains and calibrates lofasm data.
 
     Parameters
     ----------
     files : str
-        A path to lofasm `.bbx.gz` files. `*` wildcard can be used for multiple 
+        A path to lofasm `.bbx.gz` files. `*` wildcard can be used for multiple
         files.
     station : {1, 2, 3, 4}
         The station from which the data comes from.
@@ -278,13 +278,13 @@ class calibrate(object):
     def add_files(self, files):
         """Add files to the calibrate class.
 
-        New files are sorted, duplicates are ignored, header data is read, and 
+        New files are sorted, duplicates are ignored, header data is read, and
         the file lists are appended together.
 
         Parameters
         ----------
         files : str
-            A path to lofasm `.bbx.gz` files. `*` wildcard can be used for multiple 
+            A path to lofasm `.bbx.gz` files. `*` wildcard can be used for multiple
             files.
         """
         new_filelist = glob.glob(files)
@@ -417,7 +417,7 @@ class calibrate(object):
                     elif sidereal_data_t[i] >= half_bin:
                         timebin = j+1
                     power.append(gall[freqchans[self.freqmhz]][timebin])
-                    print timebin
+                    print(timebin)
                     break
 
         return power
@@ -462,7 +462,7 @@ class calibrate(object):
 
         fitted = (y0-popt[1])/popt[0]
 
-        return fitted		
+        return fitted
 
     def calibration_parameters(self, data=None, galaxy=None):
         """Returns the calibration parameters.
@@ -518,7 +518,7 @@ class calibrateio(object):
     Parameters
     ----------
     files : str
-        A path to lofasm `.bbx` files. `*` wildcard can be used for multiple 
+        A path to lofasm `.bbx` files. `*` wildcard can be used for multiple
         files.
     output : str
         A path were Calibrated files will be written to.
@@ -582,7 +582,7 @@ class calibrateio(object):
         # 	filename = os.path.basename(filelist[i])
 
         # 	calname = (output + 'Calibrated_' + filename)
-        # 	calibrated = (list_of_powers[i]-calibration_pmts[1])/calibration_pmts[0]			
+        # 	calibrated = (list_of_powers[i]-calibration_pmts[1])/calibration_pmts[0]
         # 	lfc = bb.LofasmFile(output + 'Calibrated_' + filename, mode = 'write')
         # 	lfc.add_data(calibrated)
         # 	lfc.write()
@@ -590,5 +590,3 @@ class calibrateio(object):
 
         sys.stdout.write('\rDone - '+str(len(filelist))+' calibration parameters \n written to '+cp_filepath)
         sys.stdout.flush()
-
-
