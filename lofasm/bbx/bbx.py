@@ -8,6 +8,8 @@ import numpy as np
 import struct
 from copy import deepcopy
 
+
+
 SUPPORTED_FILE_SIGNATURES = ['\x02BX', 'ABX', 'BX']
 SUPPORTED_ENCODING_SCHEMES = ['raw256']
 SUPPORTED_HDR_TYPES = ['LoFASM-filterbank', 'LoFASM-dedispersion-dm-time']
@@ -19,6 +21,8 @@ REQUIRED_HDR_COMMENT_FIELDS = {
                                     'channel', 'dim1_start', 'dim1_span',
                                     'dim2_start', 'dim2_span', 'data_type']
 }
+
+python_vesion = sys.version_info[0]
 
 
 class LofasmFile(object):
@@ -59,10 +63,16 @@ class LofasmFile(object):
                 with gzip.open(self.fpath, self._fmode) as f:
                     gz = True if f.readline() else False
             except IOError as e:
-                if e.message == 'Not a gzipped file':
-                    gz = False
+                if python_vesion <= 2:
+                    if e.message == 'Not a gzipped file':
+                        gz = False
+                    else:
+                        raise IOError(e.message)
                 else:
-                    raise IOError(e.message)
+                    if str(e).startswith('Not a gzipped file'):
+                        gz = False
+                    else:
+                        raise IOError(str(e))
         elif mode == 'write':
             gz = gz if gz else False
 
@@ -183,11 +193,13 @@ class LofasmFile(object):
 
         if N:
             if N > self.dim1_len:
-                dim1_len = self.dim1_len
+                req_dim1_len = self.dim1_len
             elif N < 0:
                 return
+            else:
+                req_dim1_len = N
         else:
-            dim1_len = self.dim1_len
+            req_dim1_len = self.dim1_len
 
 
         if not self.iscplx:
@@ -198,11 +210,11 @@ class LofasmFile(object):
 
             self._debug('parsing real data')
             nbytes = self.freqbins * self.nbits / 8
-            self.data = np.zeros((int(self.dim2_len), int(dim1_len)),
+            self.data = np.zeros((int(self.dim2_len), int(req_dim1_len)),
                                  dtype=np.float64)
             self.dtype = self.data.dtype
-            for col in range(dim1_len):
-                spec = struct.unpack(fmt, self._fp.read(nbytes))
+            for col in range(req_dim1_len):
+                spec = struct.unpack(fmt, self._fp.read(int(nbytes)))
                 self.data[:,col] = spec
         else:
             if self.nbits == 64:
@@ -211,9 +223,9 @@ class LofasmFile(object):
                 fmt = '>{}l'.format(2*self.dim2_len)
             self._debug('parsing complex data')
             nbytes = 2 * self.freqbins * self.nbits / 8
-            self.data = np.zeros((int(self.dim2_len), int(dim1_len)), dtype=np.complex128)
+            self.data = np.zeros((int(self.dim2_len), int(req_dim1_len)), dtype=np.complex128)
             self.dtype = self.data.dtype
-            for col in range(dim1_len):
+            for col in range(req_dim1_len):
                 spec_cmplx = struct.unpack(fmt, self._fp.read(nbytes))
                 i=0
                 for row in range(len(spec_cmplx)/2):
@@ -291,6 +303,8 @@ class LofasmFile(object):
     def _load_header(self):
         try:
             fsig = self._fp.readline().strip()
+            if python_vesion >= 3:
+                fsig = str(fsig.decode("utf-8"))
             if fsig.startswith('%'):
                 fsig = fsig.strip('%')
             elif self.gz:
@@ -301,19 +315,26 @@ class LofasmFile(object):
             if self.gz and e.strerror == 'Not a gzipped file':
                 raise IOError("Compression parameter is True but input file is not a gzipped file")
             else:
-                raise IOError(e.message)
+                if python_vesion <= 2:
+                    raise IOError(e.message)
+                else:
+                    raise IOError(str(e))
 
         if fsig not in SUPPORTED_FILE_SIGNATURES:
             raise NotImplementedError("{} is not a supported LoFASM file signature".format(fsig))
 
         # populate header dictionary with header comment fields
         line = self._fp.readline().strip()
+        if python_vesion >= 3:
+            line = str(line.decode("utf-8"))
         while line.startswith('%'):
             contents = line.strip('%').split(":")
             key = contents[0]
             val = ':'.join(contents[1:])
             self.header[key] = val.strip()
             line = self._fp.readline().strip()
+            if python_vesion >= 3:
+                line = str(line.decode("utf-8"))
 
         # check for hdr_type field first. This is how we determine what fields are required
         if 'hdr_type' not in self.header.keys():
